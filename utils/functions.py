@@ -83,6 +83,29 @@ def enrich_AIS_data(
 ):
 
     AIS_enriched = AIS.merge(
-        ship_data_enriched, left_on, right_on
+        ship_data_enriched,
+        left_on = left_on,
+        right_on = right_on
     )
     return AIS_enriched
+
+
+def count_boats(
+    df,
+    unique_id = "mmsi",
+    by = None,
+    normalize = False
+    ):
+    if by is None:
+        x = df.drop_duplicates(
+            unique_id
+            ).agg(
+                {unique_id: "nunique"}
+                )
+    else:
+        x = df.drop_duplicates(
+            subset = unique_id
+            ).value_counts(by)
+
+    return x
+
