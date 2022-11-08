@@ -24,3 +24,15 @@ download_pb(url, "port.json")
 ports = gpd.read_file("port.json")
 
 # mc cp port.json s3/projet-hackathon-un-2022/open-data/wfp_ports/ports.json
+
+from cartiflette.utils import download_pb
+url="https://raw.githubusercontent.com/newzealandpaul/Shipping-Lanes/main/data/Shipping_Lanes_v1.geojson"
+download_pb(url, "shipping_lanes.json")
+
+mc cp shipping_lanes.json s3/projet-hackathon-un-2022/open-data/shipping_lanes/lines.json
+
+
+
+
+from pyarrow import fs
+s3 = fs.S3FileSystem(endpoint_override="http://"+"minio.lab.sspcloud.fr")
