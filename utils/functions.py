@@ -77,7 +77,7 @@ def bbox_geopandas(
     sw = df[[latitude_var, longitude_var]].min().values.tolist()
     ne = df[[latitude_var, longitude_var]].max().values.tolist()
 
-    return {"center": center, "sw": sw, "ne": ne}
+    return (center, sw, ne)
 
 def enrich_AIS_data(
     AIS,
