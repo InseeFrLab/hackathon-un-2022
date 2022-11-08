@@ -1,5 +1,9 @@
+import matplotlib.pyplot as plt
+
 import pandas as pd
 import geopandas as gpd
+
+from pywaffle import Waffle
 
 import s3fs
 
@@ -108,4 +112,24 @@ def count_boats(
             ).value_counts(by)
 
     return x
+
+
+def waffle_chart_zone(
+    df,
+    by=None
+):
+    temp = count_boats(df, by=by).to_dict()
+
+    fig = plt.figure(
+        FigureClass=Waffle,
+        rows=10,
+        values=temp,
+        columns=10, 
+        icons='ship',
+        legend={'loc': 'lower left', 'bbox_to_anchor': (0, -0.4), 'ncol': 2, 'framealpha': 0},
+        font_size=12,
+        icon_legend=True
+    )
+
+    return fig
 
