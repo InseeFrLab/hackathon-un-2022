@@ -5,7 +5,7 @@ import s3fs
 
 PATH_SHIP_DATA = "IHS/ship_data.parquet"
 PATH_SHIP_CODES = PATH_SHIP_DATA.replace("data","codes")
-PATH_AIS_PARQUET="AIS/ais_azov_20220101_20220107.parquet"
+PATH_AIS_PARQUET = "AIS/ais_azov_black_20220001_20220007.parquet"
 BUCKET = "projet-hackathon-un-2022"
 ENDPOINT = 'https://minio.lab.sspcloud.fr'
 
@@ -74,3 +74,15 @@ def bbox_geopandas(
     ne = df[[latitude_var, longitude_var]].max().values.tolist()
 
     return {"center": center, "sw": sw, "ne": ne}
+
+def enrich_AIS_data(
+    AIS,
+    ship_data_enriched,
+    left_on='mmsi',
+    right_on="MaritimeMobileServiceIdentityMMSINumber"
+):
+
+    AIS_enriched = AIS.merge(
+        ship_data_enriched, left_on, right_on
+    )
+    return AIS_enriched
