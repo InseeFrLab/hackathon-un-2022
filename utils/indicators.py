@@ -1,6 +1,6 @@
 import pandas as pd
 import utils.functions as fc
-
+import numpy as np
 
 BUCKET = "projet-hackathon-un-2022"
 
@@ -33,8 +33,14 @@ def assign_destination_country(ais_enriched):
     ports["Main Port Name"] = ports["Main Port Name"].str.upper()
     ports = ports.rename({"Main Port Name" : "destination"}, axis=1)
     ais_enriched = pd.merge(ais_enriched, ports, on = ["destination"], how="left")
+    # cleaning destination
+    print(ais_enriched.groupby("mmsi")["destination"].unique())
+    #ais_enriched["destination2"] = ais_enriched["destination"].replace("None", np.nan)
+    # ais_enriched["destination2"] = ais_enriched["destination"].replace()
     ais_enriched = ais_enriched.rename({"Country Code": "destination_country"}, axis=1)
     print("Classification of destination countries")
     destination_ports = ais_enriched.groupby("mmsi")["destination_country"].first().reset_index()
     print(destination_ports["destination_country"].value_counts())
+    print(destination_ports.loc[destination_ports["destination_country"].isna(), :].shape)
+    print(destination_ports.loc[destination_ports["destination_country"].isna(), :].shape[0]/destination_ports.shape[0])
     return ais_enriched, destination_ports
