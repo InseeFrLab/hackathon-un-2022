@@ -113,21 +113,56 @@ def count_boats(
 
     return x
 
+def count_boats_blocked(data, share_not_usable = 0.3, by='ShiptypeLevel1'):
+
+    temp = count_boats(data, by=by).reset_index()
+    total = temp[0].sum()
+    temp[0] = temp[0]*(1-share_not_usable)
+    temp = pd.concat(
+        [temp, pd.DataFrame(["Ships blocked"], columns=[by])]
+    ).reset_index(drop=True)
+
+    temp.loc[
+        temp[temp.columns[0]] == "Ships blocked", 0
+        ] = total*share_not_usable
+
+    temp = temp.loc[
+        temp[0]/temp[0].sum() > 0.01
+        ]
+
+    temp = temp.set_index(by)
+
+    return temp
 
 def waffle_chart_zone(
     df,
     by=None,
-    share_blocked = 0
+    share_blocked = None
 ):
-    temp = count_boats(df, by=by).to_dict()
+    if share_blocked is None:
+        temp = count_boats(df, by=by).to_dict()
+        icons = "ship"
+    else:
+        temp = count_boats_blocked(
+            df,
+            share_not_usable=share_blocked,
+            by=by
+            )
+        classes = temp.index.nunique()
+        temp = temp.to_dict()[0]
+        icons  = ['ship']*(classes - 1) + ['anchor']
+
 
     fig = plt.figure(
         FigureClass=Waffle,
         rows=10,
         values=temp,
         columns=10, 
-        icons='ship',
-        legend={'loc': 'lower left', 'bbox_to_anchor': (0, -0.4), 'ncol': 2, 'framealpha': 0},
+        icons=icons,
+        legend={
+            'loc': 'lower left',
+            'bbox_to_anchor': (0, -0.4),
+            'ncol': 2, 'framealpha': 0},
         font_size=12,
         icon_legend=True
     )
@@ -135,7 +170,7 @@ def waffle_chart_zone(
     return fig
 
 
-def import_ports(path_port = PATH_PORT):
+def import_ports(path_port=PATH_PORT):
     
     ports = pd.read_csv(path_port)
     
