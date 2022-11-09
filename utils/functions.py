@@ -9,10 +9,10 @@ import s3fs
 
 PATH_SHIP_DATA = "IHS/ship_data.parquet"
 PATH_SHIP_CODES = PATH_SHIP_DATA.replace("data","codes")
-PATH_AIS_PARQUET = "AIS/ais_azov_black_20220001_20220007.parquet"
+PATH_AIS_PARQUET = "AIS/ais_azov_black_20220401_20220408_full_traces.parquet"
 BUCKET = "projet-hackathon-un-2022"
 ENDPOINT = 'https://minio.lab.sspcloud.fr'
-
+PATH_PORT = 'https://msi.nga.mil/api/publications/download?type=view&key=16920959/SFH00000/UpdatedPub150.csv'
 
 def create_s3_fs(endpoint=ENDPOINT):
     fs = s3fs.S3FileSystem(
@@ -116,7 +116,8 @@ def count_boats(
 
 def waffle_chart_zone(
     df,
-    by=None
+    by=None,
+    share_blocked = 0
 ):
     temp = count_boats(df, by=by).to_dict()
 
@@ -133,3 +134,14 @@ def waffle_chart_zone(
 
     return fig
 
+
+def import_ports(path_port = PATH_PORT):
+    
+    ports = pd.read_csv(path_port)
+    
+    ports = gpd.GeoDataFrame(
+        ports, geometry = gpd.points_from_xy(ports['Longitude'], ports['Latitude']),
+        crs = 4326
+    )
+
+    return ports
