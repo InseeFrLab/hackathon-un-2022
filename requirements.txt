@@ -1,1 +1,3 @@
 pywaffle
+pip install dash-leaflet==0.1.23
+pip install dash-extensions==0.0.65

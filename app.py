@@ -1,9 +1,11 @@
-from dash import Dash, html, dcc, Input, Output
-import plotly.express as px
-import pandas as pd
 import io
 import base64
+import pandas as pd
 import matplotlib.pyplot as plt
+
+from dash import Dash, html, dcc, Input, Output
+import plotly.express as px
+import dash_leaflet as dl
 
 import utils.functions as fc
 
@@ -22,7 +24,19 @@ AIS_enriched = fc.enrich_AIS_data(
 
 
 app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+    
+    html.H1(children='TITRE NIVEAU 1'),
+
+    html.H2(children='Ports'),
+
+    html.Div(
+        children = dcc.Dropdown(
+                ["Black Sea", "Suez Canal"],
+                'Black Sea',
+                id='region-problem'
+            ),
+        style={'width': '25%'}
+    ),
 
     html.Div(children='''
         Simulating port glut
