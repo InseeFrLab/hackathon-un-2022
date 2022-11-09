@@ -1,5 +1,6 @@
 import io
 import base64
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -19,9 +20,18 @@ AIS = fc.read_ais_parquet()
 AIS_enriched = fc.enrich_AIS_data(
     AIS, ship_data_enriched
 )
-#fc.waffle_chart_zone(AIS_enriched, by = )
+ports['map_color'] = np.where(ports["World Water Body"].str.contains("Black"), 'lightblue','red')
+mapping = {'Very Small': 1, 'Small': 2, 'Medium': 3, 'Large': 4, ' ': None}
+ports = ports.assign(size = ports['Harbor Size'].map(mapping))
+ports2 = ports.dropna(subset = "size")
+ports2 = ports2.loc[ports2['size']>1]
 
-
+worldmap = px.scatter_mapbox(ports2,
+                    lon=ports2.geometry.x, lat=ports2.geometry.y,
+                    size="size", # which column to use to set the color of markers
+                    color = "map_color",
+                    hover_name="Main Port Name", # column added to hover information
+                    mapbox_style="carto-positron")
 
 app.layout = html.Div(children=[
     
@@ -37,6 +47,11 @@ app.layout = html.Div(children=[
             ),
         style={'width': '25%'}
     ),
+
+    dcc.Graph(
+        id='worldmap-ports',
+        figure=worldmap
+    ), 
 
     html.Div(children='''
         Simulating port glut
