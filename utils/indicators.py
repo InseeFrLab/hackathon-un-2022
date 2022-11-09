@@ -14,17 +14,19 @@ def assign_country_origin(ais_enriched):
     ais_enriched = pd.merge(ais_enriched, mmsi_number, on=["Digit"], how="left")
     ais_enriched = ais_enriched.rename({"Allocated to" : "origin_country"}, axis=1)
     print("Classification of origin country")
-    print(ais_enriched["origin_country"].value_counts())
+    origin_countries = ais_enriched.groupby("mmsi")["origin_country"].first()
+    print(origin_countries.value_counts())
     print("Number of missing origin country")
     print(ais_enriched.loc[ais_enriched["origin_country"].isna() | ais_enriched["origin_country"] == "", :].shape)
-    return ais_enriched
+    return ais_enriched, origin_countries
 
 
 def assign_destination_country(ais_enriched):
     print("Percentage missing destination port")
-    print(ais_enriched.loc[(ais_enriched["destination"].isna()) | (ais_enriched["destination"] == ""), :].shape[0]/ais_enriched.shape[0])
+    destination_ports = ais_enriched.groupby("mmsi")["destination"].first().reset_index()
+    print(destination_ports.loc[(destination_ports["destination"].isna()) | (destination_ports["destination"] == ""), :].shape[0]/destination_ports.shape[0])
     print("Number missing destination port")
-    print(ais_enriched.loc[ais_enriched["destination"].isna(), :].shape[0])
+    print(destination_ports.loc[destination_ports["destination"].isna(), :].shape[0])
     # Download port data
     ports = pd.read_csv('https://msi.nga.mil/api/publications/download?type=view&key=16920959/SFH00000/UpdatedPub150.csv')
     ports = ports.loc[:, ["Main Port Name", "Country Code"]]
@@ -33,5 +35,6 @@ def assign_destination_country(ais_enriched):
     ais_enriched = pd.merge(ais_enriched, ports, on = ["destination"], how="left")
     ais_enriched = ais_enriched.rename({"Country Code": "destination_country"}, axis=1)
     print("Classification of destination countries")
-    print(ais_enriched["destination_country"].value_counts())
-    return ais_enriched
+    destination_ports = ais_enriched.groupby("mmsi")["destination_country"].first().reset_index()
+    print(destination_ports["destination_country"].value_counts())
+    return ais_enriched, destination_ports

@@ -145,3 +145,12 @@ def import_ports(path_port = PATH_PORT):
     )
 
     return ports
+
+
+def filter_cargo(ais_enriched):
+    ais_enriched = ais_enriched.loc[ais_enriched["ShiptypeLevel1"] == "Cargo Carrying",:]
+    ais_enriched = ais_enriched.loc[ais_enriched["ShipTypeLevel3"]
+                                    .isin(["General Cargo", "Bulk Dry",  "Container", 
+                                           "Other Bulk Dry", "Refrigerated Cargo",
+                                           "Other Dry Cargo", "Bulk Dry / Oil",                                                                                  "Self Discharging Bulk Dry"]),:]
+    return ais_enriched
