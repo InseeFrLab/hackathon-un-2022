@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
-import dash_leaflet as dl
+#import dash_leaflet as dl
 
 import utils.functions as fc
 
@@ -20,18 +20,8 @@ AIS = fc.read_ais_parquet()
 AIS_enriched = fc.enrich_AIS_data(
     AIS, ship_data_enriched
 )
-ports['map_color'] = np.where(ports["World Water Body"].str.contains("Black"), 'lightblue','red')
-mapping = {'Very Small': 1, 'Small': 2, 'Medium': 3, 'Large': 4, ' ': None}
-ports = ports.assign(size = ports['Harbor Size'].map(mapping))
-ports2 = ports.dropna(subset = "size")
-ports2 = ports2.loc[ports2['size']>1]
 
-worldmap = px.scatter_mapbox(ports2,
-                    lon=ports2.geometry.x, lat=ports2.geometry.y,
-                    size="size", # which column to use to set the color of markers
-                    color = "map_color",
-                    hover_name="Main Port Name", # column added to hover information
-                    mapbox_style="carto-positron")
+
 
 app.layout = html.Div(children=[
     
@@ -41,16 +31,18 @@ app.layout = html.Div(children=[
 
     html.Div(
         children = dcc.Dropdown(
-                ["Black Sea", "Suez Canal"],
-                'Black Sea',
+            options=[
+                {'label': 'Black Sea', 'value': 'Black'},
+                {'label': 'Suez Canal', 'value': 'Suez'},
+            ],
+                value = 'Black Sea',
                 id='region-problem'
             ),
         style={'width': '25%'}
     ),
 
     dcc.Graph(
-        id='worldmap-ports',
-        figure=worldmap
+        id='worldmap-ports'
     ), 
 
     html.Div(children='''
@@ -102,6 +94,13 @@ def update_graph(xaxis_column_name, share_block):
     data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
     return "data:image/png;base64,{}".format(data)
 
+@app.callback(
+    Output('worldmap-ports', 'figure'),
+    Input('region-problem', 'value')
+    )
+def update_figure(region_name):
+    fig = fc.plot_worldmap_ports(ports, region = region_name)
+    return fig
 
 
 if __name__ == '__main__':

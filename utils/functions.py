@@ -1,9 +1,14 @@
 import matplotlib.pyplot as plt
 
+
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 
+
 from pywaffle import Waffle
+
+import plotly.express as px
 
 import s3fs
 
@@ -180,6 +185,31 @@ def import_ports(path_port=PATH_PORT):
     )
 
     return ports
+
+
+def subset_ports(ports, region = "Black"):
+    ports['region'] = np.where(ports["World Water Body"].str.contains(region, regex = True), True, False)
+    mapping = {'Very Small': 1, 'Small': 2, 'Medium': 3, 'Large': 4, ' ': None}
+    ports = ports.assign(size = ports['Harbor Size'].map(mapping))
+    ports2 = ports.dropna(subset = "size")
+    ports2 = ports2.loc[ports2['size']>1]
+    return ports2
+
+def plot_worldmap_ports(ports, region = "Black"):
+    ports2 = subset_ports(ports, region)
+    ports2_region = ports2.loc[ports2['region']]
+    worldmap = px.scatter_mapbox(ports2,
+                        lon=ports2.geometry.x, lat=ports2.geometry.y,
+                        size="size", # which column to use to set the color of markers
+                        color="region",
+                        opacity = 0.6,
+                        #marker_symbol = 'harbor',
+                        mapbox_style = "stamen-toner",
+                        center=dict(lat=ports2_region.geometry.y.mean(), lon=ports2_region.geometry.x.mean()),
+                        zoom = 4,
+                        hover_name="Main Port Name" # column added to hover information
+    )
+    return worldmap
 
 
 def filter_cargo(ais_enriched):
