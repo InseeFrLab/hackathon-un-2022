@@ -2,6 +2,10 @@ name: Dockerize
 
 on:
   # Allows you to run this workflow manually from the Actions tab
+  push:
+    branches: [ main ]
+    paths: 
+      - "Dockerfile"
   workflow_dispatch:
 
 jobs:
