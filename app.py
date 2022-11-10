@@ -121,14 +121,36 @@ app.layout = html.Div(children=[
 
     html.Br(),
 
+    html.Div(id='circulation-before-crisis'),  
     html.Div(id='region-number-boat'),  
 
     html.Br(),
 
-    html.Div(children='State of traffic in this period:'),  
+    html.H4(children='Type of traffic in this period:'),  
 
-    html.Img(id='waffle-simple'),
+    html.Div([
+        html.Div(
+            html.H5(children='Before crisis'),
+            style={'width': '45%'}
+        ),
+        html.Div(
+            html.H5(children='During crisis'),
+            style={'width': '45%'}
+        ),
+    ], style={'display': 'flex', 'flex-direction': 'row'}),
 
+    html.Div([
+        html.Div(
+            html.Img(id='waffle-simple'),
+            style={'width': '45%'}
+        ),
+        html.Div(
+            html.Img(id='waffle-simple2'),
+            style={'width': '45%'}
+        ),
+    ], style={'display': 'flex', 'flex-direction': 'row'}),
+
+    html.Br(),
     html.Br(),
 
     html.H2(children='''
@@ -136,6 +158,8 @@ app.layout = html.Div(children=[
     '''),
 
     html.Br(),
+    html.Br(),
+
 
     html.Div([
         html.Div(
@@ -147,6 +171,9 @@ app.layout = html.Div(children=[
             style={'width': '45%'}
         ),
     ], style={'display': 'flex', 'flex-direction': 'row'}),
+
+    html.Br(),
+    html.Br(),
 
     html.H2(children='''
         Simulating problem in this region
@@ -175,6 +202,10 @@ app.layout = html.Div(children=[
         style={'width': '25%'}
     ),
 
+    html.Br(),
+    html.Br(),
+
+
     html.H2(children='''
         What are the consequences on other countries ?
     '''),
@@ -195,6 +226,15 @@ def update_figure(region_name):
     boat_position = fc.read_random_boats_prepared(region = region_name)
     fig = fc.plot_worldmap_ports(ports, region = region_name, boat_position = boat_position)
     return fig
+
+@app.callback(
+    Output(component_id='circulation-before-crisis', component_property='children'),
+    Input('region-problem', 'value')
+    )
+def update_figure(region_name):
+    return fc.share_international_trade(region_name, "2019-04-01")
+
+
 
 
 # LINE PLOTS FOR BOAT COUNTS
