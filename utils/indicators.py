@@ -139,3 +139,161 @@ def fuzzy_match_destination_country(ais_data):
     print(res_fuz_match2.loc[~res_fuz_match2["matched_destination_country"].isna(), :].shape[0]/ais_data["mmsi"].nunique())
     return ais_data, res_fuz_match2
 
+def find_countries_aggregate_table(df, origin=True):
+    if origin:
+        var_name = 'origin'
+    else: var_name = 'destination'
+    
+    # Full port list to look in
+    port_data = pd.read_csv('https://msi.nga.mil/api/publications/download?type=view&key=16920959/SFH00000/UpdatedPub150.csv')
+    port_codes_data = port_data[['UN/LOCODE', 'Country Code']]
+    port_data = port_data.loc[:, ["Main Port Name", "Country Code"]]
+    port_data["Main Port Name"] = port_data["Main Port Name"].str.upper()
+    port_data = port_data.rename({"Main Port Name" : "port", "Country Code": "country"}, axis=1)
+    
+    port_codes_data = port_codes_data[['UN/LOCODE', 'Country Code']]
+    port_codes_data = port_codes_data[port_codes_data['UN/LOCODE'] != ' ']
+    port_codes_data = port_codes_data[port_codes_data['UN/LOCODE'] != '']
+    port_codes_data = port_codes_data.drop_duplicates(subset=['UN/LOCODE']).rename(
+        columns={'UN/LOCODE': 'port',
+                 "Country Code": "country"}
+    )
+    port_data = pd.concat([port_data, port_codes_data])
+    port_data = port_data.drop_duplicates(subset=['port'])
+
+    # Clean
+    list_errors = ['AREA3 FISHING GROUND', 'ARM GAURD ON BOARD',
+                   'ARM GUARD ON BOARD', 'ARM.GUARDS ON BOARD', 'ARMED GUARD ON BOARD', 'ARMED GUARDS ON BOAP',
+                   'ARMED GUARDS ON BOAR', 'ARMED GUARDS ONB', 'ARMED GUARDS ONBOARD', 'ARMED ON BOARD',
+                   'ARMGUARD O.B', 'ARMGUARD ONBOARD', 'ARMS GUARDS ON BOARD']
+    df["port"] = (df["port"].replace("None", np.nan)
+                            .replace('B 2 A', np.nan)
+                            .replace('J0', np.nan)
+                            .replace('0', np.nan)
+                            .replace(',',np.nan)
+                            .replace('G', np.nan)
+                            .replace('I0', np.nan)
+                            .replace('C', np.nan)
+                            .replace('D', np.nan)
+                            .replace('C0', np.nan)
+                            .replace('S0', np.nan).replace('M', np.nan)
+                            .replace('X', np.nan).replace('A', np.nan)
+                            .replace('ZRP', np.nan)
+                            .replace('AT SEA', np.nan)
+                            .replace("$", np.nan)
+                            .replace('#HDCR*H!!!)JM0I*!&', np.nan)
+                            .replace("%", np.nan)
+                            .replace("-", np.nan).replace('-C>-',np.nan)
+                            .replace('-C?M',np.nan)
+                            .replace('-[C?<)RD\\K$OQ8)',np.nan)
+                            .replace( '.',np.nan)
+                            .replace( '...',np.nan)
+                            .replace('0XA F3L86F,[E^CON',np.nan)
+                            .replace('17 B#',np.nan)
+                            .replace('2',np.nan)
+                            .replace('3',np.nan)
+                            .replace('450',np.nan)
+                            .replace(r'(\s\/\s[a-zA-Z]+)', '', regex=True)
+                            .replace(r'(\/[a-zA-Z]+)', '', regex=True)
+                            .replace('FISHING AREA', np.nan))
+    df.loc[df["port"].isin(list_errors), "port"] = np.nan
+
+    unique_ports_arrivals = pd.DataFrame(df.port.unique())
+    unique_ports_arrivals.columns = ['port']
+    cart_prod = unique_ports_arrivals.merge(port_data, how='cross')
+
+    res_fuz_match = check_distance_levenshtein(cart_prod, ["port_x", "port_y"])
+
+    idx = res_fuz_match.groupby(['port_x'])['ratio1'].transform(max) == res_fuz_match['ratio1']
+    res_fuz_match2 = res_fuz_match[idx]
+    res_fuz_match2 = res_fuz_match2.groupby(['port_x']).first()
+    res_fuz_match2["true_match"] = np.nan
+
+    res_fuz_match2.loc[res_fuz_match2["ratio1"] > 80, "true_match"] = \
+        res_fuz_match2.loc[res_fuz_match2["ratio1"] > 80, "port_y"]
+
+    df = df.merge(
+        res_fuz_match2.reset_index()[['port_x', 'true_match', 'country']], left_on='port', right_on='port_x'
+    )
+    df = df.drop('port_x', axis=1)
+    df.loc[df['true_match'].isna(), 'country'] = np.nan
+
+    # Imputation
+    DICT_VAR = dict(df.country.value_counts())
+
+    keys, weights = zip(*DICT_VAR.items())
+    probs = np.array(weights, dtype=float) / float(sum(weights))
+    sample_np = np.random.choice(keys, 1, p=probs)
+
+    df.country = [np.random.choice(keys, 1, p=probs)[0] if val != val else val for val in df.country]
+
+    country_list = ['Turkey', 'Bulgaria', 'Romania', 'Ukraine', 'Russia', 'Georgia']
+    df = df[df.country.isin(country_list)]
+    df = df.drop('true_match', axis=1)
+
+    # Matching origin or destination
+    df[var_name] = (df[var_name].replace("None", np.nan)
+                            .replace('B 2 A', np.nan)
+                            .replace('J0', np.nan)
+                            .replace('0', np.nan)
+                            .replace(',',np.nan)
+                            .replace('G', np.nan)
+                            .replace('I0', np.nan)
+                            .replace('C', np.nan)
+                            .replace('D', np.nan)
+                            .replace('C0', np.nan)
+                            .replace('S0', np.nan).replace('M', np.nan)
+                            .replace('X', np.nan).replace('A', np.nan)
+                            .replace('ZRP', np.nan)
+                            .replace('AT SEA', np.nan)
+                            .replace("$", np.nan)
+                            .replace('#HDCR*H!!!)JM0I*!&', np.nan)
+                            .replace("%", np.nan)
+                            .replace("-", np.nan).replace('-C>-',np.nan)
+                            .replace('-C?M',np.nan)
+                            .replace('-[C?<)RD\\K$OQ8)',np.nan)
+                            .replace( '.',np.nan)
+                            .replace( '...',np.nan)
+                            .replace('0XA F3L86F,[E^CON',np.nan)
+                            .replace('17 B#',np.nan)
+                            .replace('2',np.nan)
+                            .replace('3',np.nan)
+                            .replace('450',np.nan)
+                            .replace(r'(\s\/\s[a-zA-Z]+)', '', regex=True)
+                            .replace(r'(\/[a-zA-Z]+)', '', regex=True)
+                            .replace('FISHING AREA', np.nan))
+    df.loc[df[var_name].isin(list_errors), var_name] = np.nan
+
+    port_data = port_data.rename(columns={'port': var_name, 'country': 'country_' + var_name})
+    
+    unique_arrivals = pd.DataFrame(df[var_name].unique())
+    unique_arrivals.columns = [var_name]
+    cart_prod = unique_arrivals.merge(port_data, how='cross')
+
+    res_fuz_match = check_distance_levenshtein(cart_prod, [var_name + "_x", var_name + "_y"])
+
+    idx = res_fuz_match.groupby([var_name + '_x'])['ratio1'].transform(max) == res_fuz_match['ratio1']
+    res_fuz_match2 = res_fuz_match[idx]
+    res_fuz_match2 = res_fuz_match2.groupby([var_name + '_x']).first()
+    res_fuz_match2["true_match"] = np.nan
+
+    res_fuz_match2.loc[res_fuz_match2["ratio1"] > 80, "true_match"] = \
+        res_fuz_match2.loc[res_fuz_match2["ratio1"] > 80, var_name + "_y"]
+
+    df = df.merge(
+        res_fuz_match2.reset_index()[[var_name + '_x', 'true_match', 'country_' + var_name]], left_on=var_name, right_on=var_name + '_x'
+    )
+    df = df.drop(var_name + '_x', axis=1)
+    df.loc[df['true_match'].isna(), 'country_' + var_name] = np.nan
+    df = df.drop('true_match', axis=1)
+
+    # Imputation
+    DICT_VAR = dict(df['country_' + var_name].value_counts())
+
+    keys, weights = zip(*DICT_VAR.items())
+    probs = np.array(weights, dtype=float) / float(sum(weights))
+    sample_np = np.random.choice(keys, 1, p=probs)
+
+    df['country_' + var_name] = [np.random.choice(keys, 1, p=probs)[0] if val != val else val for val in df['country_' + var_name]]
+
+    return df
