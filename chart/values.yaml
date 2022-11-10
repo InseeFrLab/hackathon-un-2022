@@ -2,6 +2,7 @@ shiny:
   image:
     repository: inseefrlab/unbdh-2022-datadive
     tag: latest
+    pullPolicy: Always
     containerPort: 5000
   ingress:
     enabled: true

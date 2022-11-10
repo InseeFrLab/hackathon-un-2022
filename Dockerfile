@@ -5,6 +5,7 @@ WORKDIR /app
 
 # copy the requirements lists
 COPY ./requirements.txt /app/requirements.txt
+COPY utils /app/utils
 
 # install all the requirements
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
