@@ -20,6 +20,8 @@ app = Dash(
 load_figure_template("JOURNAL")
 
 
+# IMPORT DATA --------------------------------
+
 ports = fc.import_ports()
 
 ship_data_enriched = fc.create_ship_data_enriched()
@@ -31,6 +33,8 @@ AIS_enriched = fc.enrich_AIS_data(
 AIS_sample_black = AIS_enriched[(AIS_enriched['region'] == "Black") & (AIS_enriched['start_date'] == "2022-04-01")]
 AIS_sample_suez = AIS_enriched[(AIS_enriched['region'] == "Suez") & (AIS_enriched['start_date'] == "2021-03-21")]
 
+
+# 
 
 boat_position = fc.random_sample_position(AIS_enriched)
 
