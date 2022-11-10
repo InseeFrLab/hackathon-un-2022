@@ -21,17 +21,22 @@ load_figure_template("JOURNAL")
 
 
 ports = fc.import_ports()
+
 ship_data_enriched = fc.create_ship_data_enriched()
-AIS = fc.read_ais_parquet()
+
+AIS = fc.read_ais_all()
 AIS_enriched = fc.enrich_AIS_data(
     AIS, ship_data_enriched
 )
+AIS_sample_black = AIS_enriched[(AIS_enriched['region'] == "Black") & (AIS_enriched['start_date'] == "2022-04-01")]
+AIS_sample_suez = AIS_enriched[(AIS_enriched['region'] == "Suez") & (AIS_enriched['start_date'] == "2021-03-21")]
+
 
 boat_position = fc.random_sample_position(AIS_enriched)
 
 # these could be dynamically assigned if we have data on suez canal
 nb_boats = int(
-    fc.count_boats(AIS_enriched, unique_id = "mmsi")
+    fc.count_boats(AIS_sample_suez, unique_id = "mmsi")
 )
 
 
