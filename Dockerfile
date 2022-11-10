@@ -17,4 +17,4 @@ COPY app.py /app/app.py
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
 # call the function
-CMD ["python app.py"]
+CMD ["python3 app.py"]
