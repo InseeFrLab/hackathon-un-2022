@@ -41,33 +41,6 @@ SIDEBAR_STYLE = {
 }
 
 
-sidebar = html.Div(
-    [
-        html.H3("Regional analysis"),
-        html.Hr(),
-        html.P(
-            "Choose region of interest", className="lead"
-        ),
-        dbc.Nav(
-            [
-                   dcc.Dropdown(
-            options=[
-                {'label': 'Black Sea', 'value': 'Black'},
-                {'label': 'Suez Canal', 'value': 'Suez'},
-            ],
-                value = 'Black Sea',
-                id='region-problem',
-                clearable=False,
-                placeholder="Select a region"
-            ) 
-            ],
-            vertical=True,
-            pills=True,
-        ),
-    ],
-    #style=SIDEBAR_STYLE,
-)
-
 ports_map = dcc.Graph(id='worldmap-ports')
 
 app.layout = html.Div(children=[
@@ -95,28 +68,38 @@ app.layout = html.Div(children=[
     # ),
 
     html.Div(
-        sidebar,
+            html.Div(
+        [
+            html.H3("Regional analysis"),
+            html.Hr(),
+            html.P(
+                "Choose region of interest", className="lead"
+            ),
+            dbc.Nav(
+                [
+                    dcc.Dropdown(
+                options=[
+                    {'label': 'Black Sea', 'value': 'Black'},
+                    {'label': 'Suez Canal', 'value': 'Suez'},
+                ],
+                    value = 'Black Sea',
+                    id='region-problem',
+                    clearable=False,
+                    placeholder="Select a region"
+                ) 
+                ],
+                vertical=True,
+                pills=True,
+            ),
+        ],
+        #style=SIDEBAR_STYLE,
+    ),
         style={'width': '25%'}
     ),
 
     html.Div(
         ports_map
     ),
-
-    # html.Div(
-    #     children = dcc.Dropdown(
-    #         options=[
-    #             {'label': 'Black Sea', 'value': 'Black'},
-    #             {'label': 'Suez Canal', 'value': 'Suez'},
-    #         ],
-    #             value = 'Black Sea',
-    #             id='region-problem',
-    #             clearable=False,
-    #             placeholder="Select a region"
-    #         ),
-    #     style={'width': '25%'}
-    # ),
-
 
     html.Br(),
 
