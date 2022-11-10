@@ -77,8 +77,19 @@ map_departures_19 = dcc.Graph(figure=fc.carte_departures(year='19'))
 map_departures_22 = dcc.Graph(figure=fc.carte_departures(year='22'))
 
 app.layout = html.Div(children=[
-    
-    html.H1(children='AIS dashboard'),
+
+    html.H1(children='Dashboard'),
+
+    html.Br(),
+    html.Br(),
+
+
+    html.Div(
+        "A decision making tool prepared by the datadive team during UN Big Data Hackathon."
+    ),
+    html.Div(
+        "In recent years, two major unexpected events on searoutes had major effects on international trade and prices."
+    ),
 
     html.Br(),
     html.Br(),
@@ -87,18 +98,33 @@ app.layout = html.Div(children=[
 
     html.Br(),
 
-    # html.Div(
-    #     [
-    #         dbc.Row(
-    #             [dbc.Col(
-    #                 sidebar
-    #             ),
-    #             dbc.Col(
-    #                 ports_map, width = 10
-    #                 )
-    #             ])
-    #     ]
-    # ),
+    html.Div(
+        "Retrospective analysis helps understanding better the consequences of some blockage on international trade"
+    ),
+
+    html.Br(),
+
+    html.Div(
+        "A tool focused on two events that affected worldwide supply chains:"
+    ),
+
+    html.Br(),
+
+    html.Ul(
+        children = [
+            html.Li("Suez Canal blockage during one week by Evergreen cargo (T1 2021)"),
+            html.Li("Black Sea blockage because of the war in Ukraine (T2 2022)")
+        ]
+    ),
+
+    html.Br(),
+
+    html.Div(
+        "The effect of these two events is different. Ukraine is a major European grain producer, while the Suez Canal region is a transit area."
+    ),    
+
+    html.Br(),
+    html.Br(),
 
     html.Div(
         sidebar,
@@ -288,7 +314,7 @@ def update_figure(region_name):
     #else:
     #    year=2021
     
-    text=f'In normal times, this area represents {p1:.1%} of ships circulating in the world. During the crisis, the share has been {p2:.1%}'
+    text=f'In normal times, this area represents {p1:.1%} of ships circulating in the world. During the crisis, the share has been {p2:.1%}.'
     
     return text
 
