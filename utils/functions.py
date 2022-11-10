@@ -90,6 +90,20 @@ def read_ais_all(
     )
     return data
 
+def read_ais_prepared(
+    fs=None,
+    region = "Black",
+    date = "2019-04-01"
+):
+    region = region.split(" ")[0]
+    path = f"projet-hackathon-un-2022/AIS/preprocessed/{region}-{date}.parquet"
+    if fs is None:
+        fs = create_s3_fs(endpoint=ENDPOINT)   
+    ais_data = pd.read_parquet(
+        fs.open(path,
+        mode='rb')
+        )
+    return ais_data
 
 
 def read_ais_parquet(
