@@ -1,6 +1,7 @@
 import pandas as pd
 import utils.functions as fc
 import numpy as np
+import rapidfuzz
 
 BUCKET = "projet-hackathon-un-2022"
 
@@ -142,6 +143,27 @@ def fuzzy_match_destination_country(ais_data):
     idx = res_fuz_match.groupby(['destination_c'])['ratio1'].transform(max) == res_fuz_match['ratio1']
     res_fuz_match2 = res_fuz_match[idx]
     res_fuz_match2["true_match"] = np.nan
+    # Keep only matched ports above 80 partial ratio
     res_fuz_match2.loc[res_fuz_match2["ratio1"]>80, "true_match"] = \
         res_fuz_match2.loc[res_fuz_match2["ratio1"]>80, "destination"]
+    # Rename destination country and take it only when above 80 partial ratio
+    res_fuz_match2["matched_destination_country"] = np.nan
+    res_fuz_match2.loc[~res_fuz_match2["true_match"].isna(), "matched_destination_country"] = \
+        res_fuz_match2.loc[~res_fuz_match2["true_match"].isna(), "Country Code"]
+    res_fuz_match2 = res_fuz_match2.rename({"true_match" : "matched_destination_port",
+                                           "destination_c": "raw_port_destination"}, axis=1)
+    # keep only boat that have matched
+    res_fuz_match2 = res_fuz_match2.loc[~res_fuz_match2["matched_destination_country"].isna(),
+                                        ["mmsi", "matched_destination_country", "matched_destination_port", 
+                                            "ratio1", "raw_port_destination"]]
+    res_fuz_match2 = res_fuz_match2.sort_values("ratio1", ascending=False)
+    res_fuz_match2 = res_fuz_match2.groupby("mmsi")[["matched_destination_country", "matched_destination_port", 
+                                            "ratio1", "raw_port_destination"]].first()
+    res_fuz_match2 = res_fuz_match2.reset_index()
+    # check some stats about matched  countries
+    print("Classification of destination countries")
+    print(res_fuz_match2["matched_destination_country"].value_counts())
+    # print(res_fuz_match2.loc[res_fuz_match2["matched_destination_country"].isna(), :].shape)
+    print("Percentage of boat with matched countries")
+    print(res_fuz_match2.loc[~res_fuz_match2["matched_destination_country"].isna(), :].shape[0]/ais_data["mmsi"].nunique())
     return ais_data, res_fuz_match2
