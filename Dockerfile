@@ -1,4 +1,3 @@
-#
 FROM inseefrlab/onyxia-python-datascience:py3.10.4
 
 # set api as the current work dir
@@ -17,4 +16,4 @@ COPY app.py /app/app.py
 ENV PYTHONPATH "${PYTHONPATH}:/app"
 
 # call the function
-CMD ["python3 app.py"]
+CMD ["python3", "app.py"]
