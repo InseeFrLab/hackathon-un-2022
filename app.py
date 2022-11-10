@@ -41,6 +41,33 @@ SIDEBAR_STYLE = {
 }
 
 
+sidebar = html.Div(
+    [
+        html.H3("Regional analysis"),
+        html.Hr(),
+        html.P(
+            "Choose region of interest", className="lead"
+        ),
+        dbc.Nav(
+            [
+                   dcc.Dropdown(
+            options=[
+                {'label': 'Black Sea', 'value': 'Black'},
+                {'label': 'Suez Canal', 'value': 'Suez'},
+            ],
+                value = 'Black Sea',
+                id='region-problem',
+                clearable=False,
+                placeholder="Select a region"
+            ) 
+            ],
+            vertical=True,
+            pills=True,
+        ),
+    ],
+    #style=SIDEBAR_STYLE,
+)
+
 ports_map = dcc.Graph(id='worldmap-ports')
 
 app.layout = html.Div(children=[
@@ -68,38 +95,28 @@ app.layout = html.Div(children=[
     # ),
 
     html.Div(
-            html.Div(
-        [
-            html.H3("Regional analysis"),
-            html.Hr(),
-            html.P(
-                "Choose region of interest", className="lead"
-            ),
-            dbc.Nav(
-                [
-                    dcc.Dropdown(
-                options=[
-                    {'label': 'Black Sea', 'value': 'Black'},
-                    {'label': 'Suez Canal', 'value': 'Suez'},
-                ],
-                    value = 'Black Sea',
-                    id='region-problem',
-                    clearable=False,
-                    placeholder="Select a region"
-                ) 
-                ],
-                vertical=True,
-                pills=True,
-            ),
-        ],
-        #style=SIDEBAR_STYLE,
-    ),
+        sidebar,
         style={'width': '25%'}
     ),
 
     html.Div(
         ports_map
     ),
+
+    # html.Div(
+    #     children = dcc.Dropdown(
+    #         options=[
+    #             {'label': 'Black Sea', 'value': 'Black'},
+    #             {'label': 'Suez Canal', 'value': 'Suez'},
+    #         ],
+    #             value = 'Black Sea',
+    #             id='region-problem',
+    #             clearable=False,
+    #             placeholder="Select a region"
+    #         ),
+    #     style={'width': '25%'}
+    # ),
+
 
     html.Br(),
 
@@ -158,7 +175,9 @@ app.layout = html.Div(children=[
     Input('region-problem', 'value')
     )
 def update_figure(region_name):
-    fig = fc.plot_worldmap_ports(ports, region = region_name)
+    AIS_enriched = fc.read_ais_prepared(region = region_name)
+    boat_position = fc.random_sample_position(AIS_enriched)
+    fig = fc.plot_worldmap_ports(ports, region = region_name, boat_position = boat_position)
     return fig
 
 
@@ -183,21 +202,23 @@ def update_graph(region_name):
     )
 def update_output_div(input_value):
     AIS_enriched = fc.read_ais_prepared(region = input_value)
-    #boat_position = fc.random_sample_position(AIS_enriched)
+    boat_position = fc.random_sample_position(AIS_enriched)
     nb_boats = int(
         fc.count_boats(AIS_enriched, unique_id = "mmsi")
     )
     text = f'In the selected region ({input_value}), in a normal week, {nb_boats} different boats cross this territory'
     return text
 
+# WAFFLE CHART BLOCKED ---------
 
 @app.callback(
     Output('waffle', 'src'),
+    Input('region-problem', 'value'),
     Input('xaxis-column', 'value'),
     Input('my-slider', 'value'),
     )
-def update_graph(xaxis_column_name, share_block):
-    AIS_enriched = fc.read_ais_prepared(region = xaxis_column_name)
+def update_graph(region_name, xaxis_column_name, share_block):
+    AIS_enriched = fc.read_ais_prepared(region = region_name)
     buf = io.BytesIO() # in-memory files
     fc.waffle_chart_zone(AIS_enriched, by = xaxis_column_name, share_blocked=share_block/100)
     plt.savefig(buf, format = "png") # save to the above file object

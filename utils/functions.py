@@ -11,6 +11,7 @@ from pywaffle import Waffle
 
 import plotly.express as px
 
+
 import s3fs
 
 PATH_SHIP_DATA = "IHS/ship_data.parquet"
