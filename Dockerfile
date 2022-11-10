@@ -1,5 +1,5 @@
 #
-FROM python:3.8-bullseye
+FROM inseefrlab/onyxia-python-datascience:py3.10.4
 
 # set api as the current work dir
 WORKDIR /app
