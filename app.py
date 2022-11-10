@@ -259,7 +259,18 @@ def update_figure(region_name):
     Input('region-problem', 'value')
     )
 def update_figure(region_name):
-    return fc.share_international_trade(region_name, "2019-04-01")
+    
+    p1 = fc.share_international_trade(region_name, "2019-04-01")
+    p2 = fc.share_international_trade(region_name, "2022-04-01")
+    
+    #if region_name.contains("Black"):
+    #    year = 2022
+    #else:
+    #    year=2021
+    
+    text=f'In normal times, this area represents {p1:.1%} of ships circulating in the world. During the crisis, the share has been {p2:.1%}'
+    
+    return text
 
 
 
