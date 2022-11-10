@@ -138,3 +138,4 @@ def fuzzy_match_destination_country(ais_data):
     print("Percentage of boat with matched countries")
     print(res_fuz_match2.loc[~res_fuz_match2["matched_destination_country"].isna(), :].shape[0]/ais_data["mmsi"].nunique())
     return ais_data, res_fuz_match2
+
