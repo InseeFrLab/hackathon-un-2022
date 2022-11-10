@@ -1,0 +1,7 @@
+apiVersion: v2
+name: datadive
+version: 1.0.0
+dependencies:
+  - name: shiny
+    version: 0.23.2
+    repository: https://inseefrlab.github.io/helm-charts
