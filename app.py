@@ -129,12 +129,18 @@ app.layout = html.Div(children=[
 
     html.Br(),
 
+    html.H2(children='''
+        Who is impacted by problems in this area ?
+    '''),
+
+    html.Br(),
+
 
     html.H2(children='''
         Simulating problem in this region
     '''),
 
-    html.Div( children = [
+    html.Div(children = [
         dcc.Slider(0, 100,
         id='my-slider',
     marks={
@@ -194,6 +200,21 @@ def update_graph(region_name):
     fs.download(path,image_filename)
     encoded_image = base64.b64encode(open(image_filename, 'rb').read())
     return 'data:image/png;base64,{}'.format(encoded_image.decode())
+
+@app.callback(
+    Output('waffle-simple2', 'src'),
+    Input('region-problem', 'value')
+    )
+def update_graph(region_name):
+    region_name = region_name.split(" ")[0]
+    path = f"projet-hackathon-un-2022/output/waffle-{region_name}-2022-04-01.png"
+    image_filename = f"waffle-{region_name}-2019-04-01.png"
+    fs.download(path,image_filename)
+    encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+    return 'data:image/png;base64,{}'.format(encoded_image.decode())
+
+
+# COUNT BOATS ------
 
 @app.callback(
     Output(component_id='region-number-boat', component_property='children'),

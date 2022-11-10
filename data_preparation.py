@@ -89,6 +89,7 @@ def count_boats(region_name = "Black", start_date = "2019-04-01"):
     )
     return nb_boats
 
+import pandas as pd
 
 pd.DataFrame(
     ["Black", "2019-04-01", count_boats(
