@@ -316,6 +316,7 @@ def plot_worldmap_ports(ports, boat_position = None, region = "Black"):
 
 
 def plot_normal_line_count(region_name):
+    fs = create_s3_fs(endpoint=ENDPOINT)
     df19 = pd.read_csv(
         fs.open("projet-hackathon-un-2022/AIS/preprocessed/day_counts_19.csv",
                 mode='rb')
@@ -325,6 +326,7 @@ def plot_normal_line_count(region_name):
 
 
 def plot_crisis_line_count(region_name):
+    fs = create_s3_fs(endpoint=ENDPOINT)
     df22 = pd.read_csv(
         fs.open("projet-hackathon-un-2022/AIS/preprocessed/day_counts_22.csv",
                 mode='rb')
