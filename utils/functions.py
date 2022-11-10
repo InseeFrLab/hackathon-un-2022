@@ -26,6 +26,9 @@ BUCKET = "projet-hackathon-un-2022"
 ENDPOINT = 'https://minio.lab.sspcloud.fr'
 PATH_PORT = 'https://msi.nga.mil/api/publications/download?type=view&key=16920959/SFH00000/UpdatedPub150.csv'
 
+world_geo = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+
+
 def create_s3_fs(endpoint=ENDPOINT):
     fs = s3fs.S3FileSystem(
     client_kwargs={'endpoint_url': endpoint}
@@ -404,3 +407,56 @@ def share_international_trade(region, date):
         ])
     p = p1/p2
     return p#f'In {date}, this area represented {p:.1%} of ships circulating in the world'
+def prepare_ship_count_by_country_gdf(df_ship_country,df_geo,year:int):
+    df_country=df_ship_country.loc[df_ship_country["year"]==year,:]
+    ship_count_by_country=df_country.groupby(['matched_destination_country']).count().reset_index().loc[:,["matched_destination_country","mmsi"]].rename({'mmsi': 'count'}, axis=1)
+    return df_geo.merge(ship_count_by_country, left_on="name",right_on="matched_destination_country").set_index("name")
+
+
+def carte_pengfei(year=2019):
+    fs = s3fs.S3FileSystem(
+        client_kwargs={'endpoint_url': 'https://minio.lab.sspcloud.fr'}
+    )
+    bucket = 'projet-hackathon-un-2022'
+    path = "AIS/full_traces_destination_countries_by_mmsi_19_22.csv"
+
+    df_country = pd.read_csv(fs.open(f'{bucket}/{path}',mode='rb'),sep=";")
+    geo_df = prepare_ship_count_by_country_gdf(df_country,world_geo,year)
+
+    fig = px.choropleth_mapbox(
+        geo_df,
+        geojson=geo_df.geometry,
+        locations=geo_df.index,
+        color="count",
+        center={"lat": 45.5517, "lon": -73.7073},
+            mapbox_style="stamen-toner",
+        zoom=1
+    )
+    return fig
+
+
+def carte_departures(year='19'):
+    fs = s3fs.S3FileSystem(
+        client_kwargs={'endpoint_url': 'https://minio.lab.sspcloud.fr'}
+    )
+    departure_aggs = pd.read_csv(fs.open('projet-hackathon-un-2022/AIS/departure_aggs_april_' + year + '.csv', mode='rb'))
+    departure_composition = departure_aggs.groupby('country')[['count', 'GrossTonnage', 'NetTonnage']].sum()
+    departure_composition = departure_composition.reset_index()
+
+    departure_composition['comp'] = [
+        departure_aggs.loc[departure_aggs['country'] == country, ['country_destination', 'count']].to_json(orient='values') for country in departure_composition.country
+    ]
+
+    to_plot = world_geo.merge(departure_composition, left_on="name",right_on="country").set_index("name")
+
+    fig = px.choropleth_mapbox(
+        to_plot,
+        geojson=to_plot.geometry,
+        locations=to_plot.index,
+        hover_data={'GrossTonnage': True, 'NetTonnage': True, 'comp': True},
+        color="count",
+        center={"lat": 45.5517, "lon": -73.7073},
+            mapbox_style="stamen-toner",
+        zoom=1
+    )
+    return fig
