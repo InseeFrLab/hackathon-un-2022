@@ -68,6 +68,8 @@ sidebar = html.Div(
 )
 
 ports_map = dcc.Graph(id='worldmap-ports')
+normal_line_plot_map = dcc.Graph(id='normal-count-line-plot')
+crisis_line_plot_map = dcc.Graph(id='crisis-count-line-plot')
 
 app.layout = html.Div(children=[
     
