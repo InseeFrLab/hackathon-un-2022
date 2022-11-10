@@ -8,6 +8,7 @@ from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 import plotly.express as px
+
 #import dash_leaflet as dl
 
 import utils.functions as fc
@@ -26,22 +27,6 @@ ports = fc.import_ports()
 
 ship_data_enriched = fc.create_ship_data_enriched()
 
-AIS = fc.read_ais_all()
-AIS_enriched = fc.enrich_AIS_data(
-    AIS, ship_data_enriched
-)
-AIS_sample_black = AIS_enriched[(AIS_enriched['region'] == "Black") & (AIS_enriched['start_date'] == "2022-04-01")]
-AIS_sample_suez = AIS_enriched[(AIS_enriched['region'] == "Suez") & (AIS_enriched['start_date'] == "2021-03-21")]
-
-
-# 
-
-boat_position = fc.random_sample_position(AIS_enriched)
-
-# these could be dynamically assigned if we have data on suez canal
-nb_boats = int(
-    fc.count_boats(AIS_sample_suez, unique_id = "mmsi")
-)
 
 
 SIDEBAR_STYLE = {
@@ -182,14 +167,29 @@ app.layout = html.Div(children=[
 ])
 
 
+# INITIAL MAP CARGO SIMULATION ----------
+
+@app.callback(
+    Output('worldmap-ports', 'figure'),
+    Input('region-problem', 'value')
+    )
+def update_figure(region_name):
+    boat_position = fc.read_random_boats_prepared(region = region_name)
+    fig = fc.plot_worldmap_ports(ports, region = region_name, boat_position = boat_position)
+    return fig
+
+
+# WAFFLE CHART BEGINNING ---------
+
 @app.callback(
     Output('waffle-simple', 'src'),
     Input('region-problem', 'value')
     )
-def update_graph(xaxis_column_name):
+def update_graph(region_name):
+    AIS_enriched = fc.read_ais_prepared(region = region_name)
     buf = io.BytesIO() # in-memory files
-    fc.waffle_chart_zone(AIS_enriched, by = "ShiptypeLevel1")
-    plt.savefig(buf, format = "png") # save to the above file object
+    fc.waffle_chart_zone(AIS_enriched, by="ShiptypeLevel1")
+    plt.savefig(buf, format="png") # save to the above file object
     plt.close()
     data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
     return "data:image/png;base64,{}".format(data)
@@ -199,30 +199,30 @@ def update_graph(xaxis_column_name):
     Input('region-problem', 'value')
     )
 def update_output_div(input_value):
+    AIS_enriched = fc.read_ais_prepared(region = input_value)
+    boat_position = fc.random_sample_position(AIS_enriched)
+    nb_boats = int(
+        fc.count_boats(AIS_enriched, unique_id = "mmsi")
+    )
     text = f'In the selected region ({input_value}), in a normal week, {nb_boats} different boats cross this territory'
     return text
 
+# WAFFLE CHART BLOCKED ---------
 
 @app.callback(
     Output('waffle', 'src'),
+    Input('region-problem', 'value'),
     Input('xaxis-column', 'value'),
     Input('my-slider', 'value'),
     )
-def update_graph(xaxis_column_name, share_block):
+def update_graph(region_name, xaxis_column_name, share_block):
+    AIS_enriched = fc.read_ais_prepared(region = region_name)
     buf = io.BytesIO() # in-memory files
     fc.waffle_chart_zone(AIS_enriched, by = xaxis_column_name, share_blocked=share_block/100)
     plt.savefig(buf, format = "png") # save to the above file object
     plt.close()
     data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
     return "data:image/png;base64,{}".format(data)
-
-@app.callback(
-    Output('worldmap-ports', 'figure'),
-    Input('region-problem', 'value')
-    )
-def update_figure(region_name):
-    fig = fc.plot_worldmap_ports(ports, region = region_name)
-    return fig
 
 
 
