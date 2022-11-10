@@ -191,6 +191,20 @@ app.layout = html.Div(children=[
     html.Br(),
     html.Br(),
 
+    html.H3(children='''
+        Number of ships circulating in this area
+    '''),
+
+    html.Div([
+        html.Div(
+            html.H5(children='Before crisis'),
+            style={'width': '45%'}
+        ),
+        html.Div(
+            html.H5(children='During crisis'),
+            style={'width': '45%'}
+        ),
+    ], style={'display': 'flex', 'flex-direction': 'row'}),    
 
     html.Div([
         html.Div(
@@ -232,9 +246,14 @@ app.layout = html.Div(children=[
         style={'width': '50%'}
     ),
 
+    html.Br(),
+    html.Br(),
+
     html.H2(children='''
         Simulating problem in this region
     '''),
+
+    html.Br(),
 
     html.Div(children = [
         dcc.Slider(0, 100,
@@ -249,6 +268,9 @@ app.layout = html.Div(children=[
     value=10)
     ]),
 
+    html.Br(),
+
+    html.Img(id='waffle'),    
 
     html.Div(
         children = dcc.Dropdown(
@@ -283,9 +305,6 @@ app.layout = html.Div(children=[
         map_departures_22
     ),
 
-    # compare our map with Lloyd's
-
-    html.Img(id='waffle')
 ])
 
 
