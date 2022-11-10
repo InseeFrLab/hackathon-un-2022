@@ -129,6 +129,16 @@ app.layout = html.Div(children=[
 
     html.Br(),
 
+    html.Div([
+        html.Div(
+            normal_line_plot_map,
+            style={'width': '45%'}
+        ),
+        html.Div(
+            crisis_line_plot_map,
+            style={'width': '45%'}
+        ),
+    ], style={'display': 'flex', 'flex-direction': 'row'}),
 
     html.H2(children='''
         Simulating problem in this region
@@ -177,6 +187,24 @@ def update_figure(region_name):
     boat_position = fc.read_random_boats_prepared(region = region_name)
     fig = fc.plot_worldmap_ports(ports, region = region_name, boat_position = boat_position)
     return fig
+
+
+# LINE PLOTS FOR BOAT COUNTS
+
+@app.callback(
+    Output('normal-count-line-plot', 'figure'),
+    Input('region-problem', 'value')
+    )
+def normal_line_count_figure(region_name):
+    return fc.plot_normal_line_count(region_name.lower())
+
+
+@app.callback(
+    Output('crisis-count-line-plot', 'figure'),
+    Input('region-problem', 'value')
+    )
+def crisis_line_count_figure(region_name):
+    return fc.plot_crisis_line_count(region_name.lower())
 
 
 # WAFFLE CHART BEGINNING ---------
