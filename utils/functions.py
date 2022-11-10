@@ -315,6 +315,27 @@ def plot_worldmap_ports(ports, boat_position = None, region = "Black"):
     return worldmap
 
 
+def plot_normal_line_count(region_name):
+    df19 = pd.read_csv(
+        fs.open("projet-hackathon-un-2022/AIS/preprocessed/day_counts_19.csv",
+                mode='rb')
+    )
+    fig = px.line(df19, x="date", y=region_name)
+    return fig
+
+
+def plot_crisis_line_count(region_name):
+    df22 = pd.read_csv(
+        fs.open("projet-hackathon-un-2022/AIS/preprocessed/day_counts_22.csv",
+                mode='rb')
+    )
+    if region_name=="black":
+        fig = px.line(df22.drop(columns=['suez']).dropna(), x="date", y=region_name)
+    else:
+        fig = px.line(df22.drop(columns=['black']).dropna(), x="date", y=region_name)
+    return fig
+
+
 def filter_cargo(ais_enriched):
     ais_enriched = ais_enriched.loc[ais_enriched["ShiptypeLevel1"] == "Cargo Carrying",:]
     ais_enriched = ais_enriched.loc[ais_enriched["ShipTypeLevel3"]
