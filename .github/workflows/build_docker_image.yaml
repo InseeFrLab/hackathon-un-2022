@@ -1,9 +1,6 @@
 name: Dockerize
 
 on:
-  # Triggers the workflow when a release is created
-  release:
-    types: [created]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -33,7 +30,9 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.docker_meta.outputs.tags }}
+          tags: |
+            ${{ steps.docker_meta.outputs.tags }}
+            ${{ github.ref == 'refs/heads/main' && 'inseefrlab/hackathon-un-2022:latest' || '' }}
           labels: ${{ steps.docker_meta.outputs.labels }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
