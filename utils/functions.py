@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
 
@@ -15,6 +16,10 @@ import s3fs
 PATH_SHIP_DATA = "IHS/ship_data.parquet"
 PATH_SHIP_CODES = PATH_SHIP_DATA.replace("data","codes")
 PATH_AIS_PARQUET = "AIS/ais_azov_black_20220401_20220408_full_traces.parquet"
+PATH_AIS_PARQUET = "AIS/|region|_|date_start|_|date_end|_full_traces_before.parquet"
+
+path = PATH_AIS_PARQUET
+
 BUCKET = "projet-hackathon-un-2022"
 ENDPOINT = 'https://minio.lab.sspcloud.fr'
 PATH_PORT = 'https://msi.nga.mil/api/publications/download?type=view&key=16920959/SFH00000/UpdatedPub150.csv'
@@ -54,20 +59,70 @@ def create_ship_data_enriched(
     return ship_data_enriched
 
 
+def read_ais_all(
+    fs=None,
+    bucket=BUCKET,
+    path_parquet=PATH_AIS_PARQUET,
+    endpoint=ENDPOINT    
+):
+    df_black_2019 = read_ais_parquet(
+            region = "ais_azov_black",
+            start_date = "2019-04-01"
+            )
+    df_black_2022 = read_ais_parquet(
+            region = "ais_azov_black",
+            start_date = "2022-04-01"
+            )
+    df_suez_2019 = read_ais_parquet(
+            region = "ais_suez",
+            start_date = "2019-04-01"
+            )
+    df_suez_2021 = read_ais_parquet(
+            region = "ais_suez",
+            start_date = "2021-03-21",
+            end_date = "2021-04-01"
+            )
+    data = pd.concat(
+        [
+            df_black_2019, df_black_2022,
+            df_suez_2019, df_suez_2021
+        ]
+    )
+    return data
+
+
+
 def read_ais_parquet(
     fs=None,
     bucket=BUCKET,
     path_parquet=PATH_AIS_PARQUET,
-    endpoint=ENDPOINT
+    endpoint=ENDPOINT,
+    region = "ais_azov_black",
+    start_date = "2019-04-01",
+    end_date = None
     ):
 
     if fs is None:
         fs = create_s3_fs(endpoint=ENDPOINT)
 
+    if end_date is None:
+        end_date = datetime.strptime(start_date, '%Y-%m-%d') + timedelta(days=7)
+        date_end = end_date.strftime('%Y%m%d')
+    else:
+        date_end = end_date.replace("-", "")
+    
+    date_start = start_date.replace("-", "")
+    path_parquet = path_parquet.replace("|date_start|", date_start)
+    path_parquet = path_parquet.replace("|date_end|", date_end)
+    path_parquet = path_parquet.replace("|region|", region)
+
     ais_data = pd.read_parquet(
         fs.open(f'{bucket}/{path_parquet}',
         mode='rb')
         )
+
+    ais_data['region'] = region.rsplit("_", maxsplit = 1)[-1].capitalize()
+    ais_data["start_date"] = start_date
 
     return ais_data
 
@@ -195,7 +250,7 @@ def subset_ports(ports, region = "Black"):
     ports2 = ports2.loc[ports2['size']>1]
     return ports2
 
-def plot_worldmap_ports(ports, region = "Black"):
+def plot_worldmap_ports(ports, boat_position = None, region = "Black"):
     ports2 = subset_ports(ports, region)
     ports2_region = ports2.loc[ports2['region']]
     worldmap = px.scatter_mapbox(ports2,
@@ -209,6 +264,21 @@ def plot_worldmap_ports(ports, region = "Black"):
                         zoom = 4,
                         hover_name="Main Port Name" # column added to hover information
     )
+
+    if boat_position is None:
+        return worldmap
+    
+
+    worldmap.add_trace(
+        go.Scattermapbox(
+            lat = boat_position.geometry.y,
+            lon = boat_position.geometry.x,
+            marker=go.scattermapbox.Marker(
+                size=3, color = "green"
+            )        
+        )
+    )
+
     return worldmap
 
 
@@ -232,4 +302,4 @@ def random_sample_position(
             y = boat_position.latitude
         )
     )
-    return boat_position
+    return boats_position

@@ -26,31 +26,6 @@ def assign_country_flag(ais_enriched):
     return ais_enriched, origin_countries
 
 
-def assign_destination_country(ais_enriched):
-    print("Percentage missing destination port")
-    destination_ports = ais_enriched.groupby("mmsi")["destination"].first().reset_index()
-    print(destination_ports.loc[(destination_ports["destination"].isna()) | (destination_ports["destination"] == ""), :].shape[0]/destination_ports.shape[0])
-    print("Number missing destination port")
-    print(destination_ports.loc[destination_ports["destination"].isna(), :].shape[0])
-    # Download port data
-    ports = pd.read_csv('https://msi.nga.mil/api/publications/download?type=view&key=16920959/SFH00000/UpdatedPub150.csv')
-    ports = ports.loc[:, ["Main Port Name", "Country Code"]]
-    ports["Main Port Name"] = ports["Main Port Name"].str.upper()
-    ports = ports.rename({"Main Port Name" : "destination"}, axis=1)
-    ais_enriched = pd.merge(ais_enriched, ports, on = ["destination"], how="left")
-    # cleaning destination
-    print(ais_enriched.groupby("mmsi")["destination"].unique())
-    #ais_enriched["destination2"] = ais_enriched["destination"].replace("None", np.nan)
-    # ais_enriched["destination2"] = ais_enriched["destination"].replace()
-    ais_enriched = ais_enriched.rename({"Country Code": "destination_country"}, axis=1)
-    print("Classification of destination countries")
-    destination_ports = ais_enriched.groupby("mmsi")["destination_country"].first().reset_index()
-    print(destination_ports["destination_country"].value_counts())
-    print(destination_ports.loc[destination_ports["destination_country"].isna(), :].shape)
-    print(destination_ports.loc[destination_ports["destination_country"].isna(), :].shape[0]/destination_ports.shape[0])
-    return ais_enriched, destination_ports
-
-
 def check_distance_levenshtein(data: pd.DataFrame, variables=None) -> pd.DataFrame:
     """
     Compute levenshtein distance between list of columns of a Pandas DataFrame
@@ -63,10 +38,6 @@ def check_distance_levenshtein(data: pd.DataFrame, variables=None) -> pd.DataFra
     Initial dataframe with new columns representing levenshtein ratio (computed using :meth:`rapidfuzz.fuzz.partial_ratio`)
     between variables
     """
-
-    if variables is None:
-        variables = ['libel_clean_relevanc', 'libel_clean_OFF', 'libel_clean_IRI']
-
     data[variables] = data[variables].astype(str)
     newvars = ["ratio{}".format(str(i)) for i in range(1, len(variables))]
     data[newvars] = pd.concat(
