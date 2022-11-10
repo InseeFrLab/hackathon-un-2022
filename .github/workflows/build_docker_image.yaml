@@ -16,7 +16,7 @@ jobs:
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1.6.0
         with:
-          images: liupengfei99/datadive
+          images: inseefrlab/unbdh-2022-datadive
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
