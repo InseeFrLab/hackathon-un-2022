@@ -362,6 +362,7 @@ def random_sample_position(
 
 
 def share_international_trade(region, date):
+    region = region.split(" ")[0]
     df_circulation = pd.read_csv("output/ais_ship_number_percentage.csv")
     df_circulation.loc[df_circulation["area"] == "azov_black", 'area'] = "Black"
     df_circulation.loc[df_circulation["area"] == "suez", 'area'] = "Suez"
@@ -378,4 +379,4 @@ def share_international_trade(region, date):
         (df_circulation["date"] == date), "ship_number"
         ])
     p = p1/p2
-    return f'During this period, this area represents {p:.1%} of ships circulation'
+    return p#f'In {date}, this area represented {p:.1%} of ships circulating in the world'

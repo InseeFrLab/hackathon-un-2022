@@ -105,21 +105,3 @@ import pandas as pd
 region = "Black"
 date = "2019-04-03"
 
-def share_international_trade(region, date):
-    df_circulation = pd.read_csv("output/ais_ship_number_percentage.csv")
-    df_circulation.loc[df_circulation["area"] == "azov_black", 'area'] = "Black"
-    df_circulation.loc[df_circulation["area"] == "suez", 'area'] = "Suez"
-    df_circulation.loc[df_circulation["date"] == "2019-04-03", 'date'] = "2019-04-01"
-    df_circulation.loc[df_circulation["date"] == "2022-04-03", 'date'] = "2022-04-01"
-    df_circulation.loc[df_circulation["date"] == "2021-03-26", 'date'] = "2021-03-21"
-
-    p1 = float(df_circulation.loc[
-        (df_circulation["area"] == region) & 
-        (df_circulation["date"] == date), "ship_number"
-        ])
-    p2 = float(df_circulation.loc[
-        (df_circulation["area"] == 'all') & 
-        (df_circulation["date"] == date), "ship_number"
-        ])
-    p = p1/p2
-    return f'During this period, this area represents {p:.1%} of ships circulation'
