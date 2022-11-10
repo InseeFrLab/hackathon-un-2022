@@ -1,0 +1,13 @@
+shiny:
+  image:
+    repository: inseefrlab/unbdh-2022-datadive
+    tag: latest
+    containerPort: 5000
+  ingress:
+    enabled: true
+    hostname: datadive.lab.sspcloud.fr
+  s3:
+    enabled: true
+    existingSecret: datadive-s3
+  postgresql:
+    enabled: false
