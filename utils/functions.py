@@ -160,6 +160,30 @@ def read_ais_parquet(
     return ais_data
 
 
+def read_price_data(
+    fs=None
+):
+    path = f"projet-hackathon-un-2022/open-data/FAO/cereal_prices_ukraine.csv"
+    if fs is None:
+        fs = create_s3_fs(endpoint=ENDPOINT)   
+    price_data = pd.read_csv(
+        fs.open(path,
+        mode='rb'), sep=";"
+        )
+    return price_data
+
+
+def plot_commodity_price(type_commodity):
+    # price data in ukraine
+    price_data = read_price_data()
+    price_data["date2"] = pd.to_datetime(price_data["date"])
+    price_data["date2"] = price_data["month"].astype(str) + "-" + price_data["year"].astype(str)
+    dataforplot = price_data.loc[price_data["commodity"] == type_commodity,:].copy()
+    dataforplot["price"] = dataforplot["price"].astype(float)
+    fig = px.line(dataforplot, x="date2", y="price", title='Prices of commodity ' + type_commodity)
+    return fig
+
+
 def bbox_geopandas(
     df: gpd.GeoDataFrame,
     latitude_var: str = "latitude",

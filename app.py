@@ -70,6 +70,7 @@ sidebar = html.Div(
 ports_map = dcc.Graph(id='worldmap-ports')
 normal_line_plot_map = dcc.Graph(id='normal-count-line-plot')
 crisis_line_plot_map = dcc.Graph(id='crisis-count-line-plot')
+price_line_plot_map = dcc.Graph(id='price-line-plot')
 
 app.layout = html.Div(children=[
     
@@ -143,6 +144,17 @@ app.layout = html.Div(children=[
     ], style={'display': 'flex', 'flex-direction': 'row'}),
 
     html.H2(children='''
+        Evolution in commodity prices during the period
+    '''),
+
+    html.Br(),
+
+    html.Div(
+        price_line_plot_map,
+        style={'width': '50%'}
+    ),
+
+    html.H2(children='''
         Simulating problem in this region
     '''),
 
@@ -207,6 +219,14 @@ def normal_line_count_figure(region_name):
     )
 def crisis_line_count_figure(region_name):
     return fc.plot_crisis_line_count(region_name.lower())
+
+
+@app.callback(
+    Output('price-line-plot', 'figure'),
+    Input('region-problem', 'value')
+    )
+def price_line_count_figure(region_name):
+    return fc.plot_commodity_price("Wheat flour")
 
 
 # WAFFLE CHART BEGINNING ---------
