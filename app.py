@@ -144,11 +144,26 @@ app.layout = html.Div(children=[
     ], style={'display': 'flex', 'flex-direction': 'row'}),
 
     html.H2(children='''
-        Evolution in commodity prices during the period
+        Evolution in cereal prices during the whole period for Ukraine
     '''),
 
     html.Br(),
-
+    html.Div(
+        children = dcc.Dropdown(
+            options=[
+                {'label': 'Wheat flour', 'value': 'Wheat flour'},
+                {'label': 'Buckwheat', 'value': 'Buckwheat'},
+                {'label': 'Barley', 'value': 'Barley'},
+                {'label': 'Bread (rye)', 'value': 'Bread (rye)'},
+                {'label': 'Semolina', 'value': 'Semolina'},
+            ],
+            value = 'Wheat flour',
+            id='price-commodity',
+            clearable=False,
+            placeholder="Select a commodity"
+            ),
+        style={'width': '25%'}
+    ),
     html.Div(
         price_line_plot_map,
         style={'width': '50%'}
@@ -223,10 +238,10 @@ def crisis_line_count_figure(region_name):
 
 @app.callback(
     Output('price-line-plot', 'figure'),
-    Input('region-problem', 'value')
+    Input('price-commodity', 'value')
     )
-def price_line_count_figure(region_name):
-    return fc.plot_commodity_price("Wheat flour")
+def price_line_count_figure(type_commodity):
+    return fc.plot_commodity_price(type_commodity)
 
 
 # WAFFLE CHART BEGINNING ---------
