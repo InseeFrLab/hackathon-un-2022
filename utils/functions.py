@@ -219,3 +219,17 @@ def filter_cargo(ais_enriched):
                                            "Other Bulk Dry", "Refrigerated Cargo",
                                            "Other Dry Cargo", "Bulk Dry / Oil",                                                                                  "Self Discharging Bulk Dry"]),:]
     return ais_enriched
+
+
+def random_sample_position(
+    AIS_enriched
+):
+    boat_position = AIS_enriched.sample(frac=1).drop_duplicates(subset = "mmsi")
+    boats_position = gpd.GeoDataFrame(
+        boat_position.loc[:,["mmsi","longitude","latitude"]],
+        geometry = gpd.points_from_xy(
+            x = boat_position.longitude, 
+            y = boat_position.latitude
+        )
+    )
+    return boat_position

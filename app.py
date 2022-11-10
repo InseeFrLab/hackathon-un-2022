@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template
 import plotly.express as px
 #import dash_leaflet as dl
 
@@ -16,6 +17,7 @@ app = Dash(
     external_stylesheets=[dbc.themes.JOURNAL]
     )
 
+load_figure_template("JOURNAL")
 
 
 ports = fc.import_ports()
@@ -25,26 +27,35 @@ AIS_enriched = fc.enrich_AIS_data(
     AIS, ship_data_enriched
 )
 
+boat_position = fc.random_sample_position(AIS_enriched)
+
 # these could be dynamically assigned if we have data on suez canal
 nb_boats = int(
     fc.count_boats(AIS_enriched, unique_id = "mmsi")
 )
 
 
-app.layout = html.Div(children=[
-    
-    html.H1(children='TITRE NIVEAU 1'),
+SIDEBAR_STYLE = {
+    "position": "relative",
+    #"top": 0,
+    #"left": 0,
+    #"bottom": 0,
+    #"width": "24rem",
+    #"padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
 
-    html.Br(),
-    html.Br(),
 
-    html.H2(children='What happens when an exceptional shock reduces a region capacity ?'),
-
-    html.Br(),
-
-
-    html.Div(
-        children = dcc.Dropdown(
+sidebar = html.Div(
+    [
+        html.H3("Regional analysis"),
+        html.Hr(),
+        html.P(
+            "Choose region of interest", className="lead"
+        ),
+        dbc.Nav(
+            [
+                   dcc.Dropdown(
             options=[
                 {'label': 'Black Sea', 'value': 'Black'},
                 {'label': 'Suez Canal', 'value': 'Suez'},
@@ -53,13 +64,64 @@ app.layout = html.Div(children=[
                 id='region-problem',
                 clearable=False,
                 placeholder="Select a region"
-            ),
+            ) 
+            ],
+            vertical=True,
+            pills=True,
+        ),
+    ],
+    #style=SIDEBAR_STYLE,
+)
+
+ports_map = dcc.Graph(id='worldmap-ports')
+
+app.layout = html.Div(children=[
+    
+    html.H1(children='AIS dashboard'),
+
+    html.Br(),
+    html.Br(),
+
+    html.H2(children='What happens when an exceptional shock reduces a region capacity ?'),
+
+    html.Br(),
+
+    # html.Div(
+    #     [
+    #         dbc.Row(
+    #             [dbc.Col(
+    #                 sidebar
+    #             ),
+    #             dbc.Col(
+    #                 ports_map, width = 10
+    #                 )
+    #             ])
+    #     ]
+    # ),
+
+    html.Div(
+        sidebar,
         style={'width': '25%'}
     ),
 
-    dcc.Graph(
-        id='worldmap-ports'
-    ), 
+    html.Div(
+        ports_map
+    ),
+
+    # html.Div(
+    #     children = dcc.Dropdown(
+    #         options=[
+    #             {'label': 'Black Sea', 'value': 'Black'},
+    #             {'label': 'Suez Canal', 'value': 'Suez'},
+    #         ],
+    #             value = 'Black Sea',
+    #             id='region-problem',
+    #             clearable=False,
+    #             placeholder="Select a region"
+    #         ),
+    #     style={'width': '25%'}
+    # ),
+
 
     html.Br(),
 
