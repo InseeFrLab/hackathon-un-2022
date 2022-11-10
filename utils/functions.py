@@ -10,6 +10,7 @@ import geopandas as gpd
 from pywaffle import Waffle
 
 import plotly.express as px
+import plotly.graph_objects as go
 
 
 import s3fs
@@ -105,6 +106,23 @@ def read_ais_prepared(
         mode='rb')
         )
     return ais_data
+
+def read_random_boats_prepared(
+    fs=None,
+    region = "Black",
+    date = "2019-04-01"
+):
+    region = region.split(" ")[0]
+    path = f"projet-hackathon-un-2022/AIS/preprocessed/boat_{region}-{date}.parquet"
+    if fs is None:
+        fs = create_s3_fs(endpoint=ENDPOINT)   
+    ais_data = pd.read_parquet(
+        fs.open(path,
+        mode='rb')
+        )
+    return ais_data
+
+
 
 
 def read_ais_parquet(
@@ -230,9 +248,9 @@ def waffle_chart_zone(
 
     fig = plt.figure(
         FigureClass=Waffle,
-        rows=10,
+        rows=15,
         values=temp,
-        columns=10, 
+        columns=15, 
         icons=icons,
         legend={
             'loc': 'lower left',
@@ -286,10 +304,10 @@ def plot_worldmap_ports(ports, boat_position = None, region = "Black"):
 
     worldmap.add_trace(
         go.Scattermapbox(
-            lat = boat_position.geometry.y,
-            lon = boat_position.geometry.x,
+            lat = boat_position.latitude,
+            lon = boat_position.longitude,
             marker=go.scattermapbox.Marker(
-                size=3, color = "green"
+                size=5, color = "green"
             )        
         )
     )

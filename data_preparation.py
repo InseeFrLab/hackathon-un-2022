@@ -24,6 +24,8 @@ def write_parquet_s3(df, path, s3):
     table = pa.Table.from_pandas(df)
     pq.write_table(table, path, filesystem = s3)
 
+
+
 write_parquet_s3(
     AIS_start_black, "projet-hackathon-un-2022/AIS/preprocessed/Black-2019-04-01.parquet", s3
 )
@@ -36,3 +38,46 @@ write_parquet_s3(
 write_parquet_s3(
     AIS_end_suez, "projet-hackathon-un-2022/AIS/preprocessed/Suez-2021-03-21.parquet", s3
 )
+
+
+# RANDOM BOATS FOR THE FIRST MAP -------------------------
+
+boat_position_black_start = pd.DataFrame(fc.random_sample_position(AIS_start_black)).loc[:, ['mmsi', 'longitude', 'latitude']]
+boat_position_suez_end = pd.DataFrame(fc.random_sample_position(AIS_start_suez)).loc[:, ['mmsi', 'longitude', 'latitude']]
+boat_position_black_start = pd.DataFrame(fc.random_sample_position(AIS_end_black)).loc[:, ['mmsi', 'longitude', 'latitude']]
+boat_position_suez_end = pd.DataFrame(fc.random_sample_position(AIS_end_suez)).loc[:, ['mmsi', 'longitude', 'latitude']]
+
+write_parquet_s3(
+    boat_position_black_start, "projet-hackathon-un-2022/AIS/preprocessed/boat_Black-2019-04-01.parquet", s3
+)
+write_parquet_s3(
+    boat_position_suez_end, "projet-hackathon-un-2022/AIS/preprocessed/boat_Suez-2019-04-01.parquet", s3
+)
+write_parquet_s3(
+    boat_position_black_start, "projet-hackathon-un-2022/AIS/preprocessed/boat_Black-2022-04-01.parquet", s3
+)
+write_parquet_s3(
+    boat_position_suez_end, "projet-hackathon-un-2022/AIS/preprocessed/boat_Suez-2021-03-21.parquet", s3
+)
+
+# WAFFLE CHART -------------------------
+
+AIS_enriched = AIS_start_black.copy()
+
+
+def create_waffle(region_name = "Black", start_date = "2019-04-01"):
+    AIS_subset = AIS_enriched.loc[(AIS_enriched['region'] == region_name) & (AIS_enriched['start_date'] == start_date)]
+    fc.waffle_chart_zone(AIS_subset, by="ShiptypeLevel1")
+    plt.savefig(f"waffle-{region_name}-{start_date}.png", format="png") # save to the above file object
+    plt.close()
+    s3_path = f"projet-hackathon-un-2022/output/waffle-{region_name}-{start_date}.png"
+    fs.put(f"waffle-{region_name}-{start_date}.png", s3_path)
+
+
+fs = fc.create_s3_fs()
+
+create_waffle(region_name = "Black", start_date = "2019-04-01")
+create_waffle(region_name = "Black", start_date = "2022-04-01")
+create_waffle(region_name = "Suez", start_date = "2019-04-01")
+create_waffle(region_name = "Suez", start_date = "2021-03-21")
+

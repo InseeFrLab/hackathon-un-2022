@@ -8,6 +8,7 @@ from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 import plotly.express as px
+
 #import dash_leaflet as dl
 
 import utils.functions as fc
@@ -25,8 +26,6 @@ load_figure_template("JOURNAL")
 ports = fc.import_ports()
 
 ship_data_enriched = fc.create_ship_data_enriched()
-
-# 
 
 
 
@@ -175,8 +174,7 @@ app.layout = html.Div(children=[
     Input('region-problem', 'value')
     )
 def update_figure(region_name):
-    AIS_enriched = fc.read_ais_prepared(region = region_name)
-    boat_position = fc.random_sample_position(AIS_enriched)
+    boat_position = fc.read_random_boats_prepared(region = region_name)
     fig = fc.plot_worldmap_ports(ports, region = region_name, boat_position = boat_position)
     return fig
 
