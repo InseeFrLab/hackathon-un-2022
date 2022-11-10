@@ -71,6 +71,10 @@ ports_map = dcc.Graph(id='worldmap-ports')
 normal_line_plot_map = dcc.Graph(id='normal-count-line-plot')
 crisis_line_plot_map = dcc.Graph(id='crisis-count-line-plot')
 price_line_plot_map = dcc.Graph(id='price-line-plot')
+map_pengfei_19 = dcc.Graph(figure=fc.carte_pengfei(year=2019))
+map_pengfei_22 = dcc.Graph(figure=fc.carte_pengfei(year=2022))
+map_departures_19 = dcc.Graph(figure=fc.carte_departures(year='19'))
+map_departures_22 = dcc.Graph(figure=fc.carte_departures(year='22'))
 
 app.layout = html.Div(children=[
     
@@ -236,6 +240,22 @@ app.layout = html.Div(children=[
     html.H2(children='''
         What are the consequences on other countries ?
     '''),
+
+    html.Div(
+        map_pengfei_19
+    ),
+
+    html.Div(
+        map_pengfei_22
+    ),
+
+    html.Div(
+        map_departures_19
+    ),
+
+    html.Div(
+        map_departures_22
+    ),
 
     # compare our map with Lloyd's
 
