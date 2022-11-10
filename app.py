@@ -68,8 +68,6 @@ sidebar = html.Div(
 )
 
 ports_map = dcc.Graph(id='worldmap-ports')
-normal_line_plot_map = dcc.Graph(id='normal-count-line-plot')
-crisis_line_plot_map = dcc.Graph(id='crisis-count-line-plot')
 
 app.layout = html.Div(children=[
     
@@ -131,15 +129,6 @@ app.layout = html.Div(children=[
 
     html.Br(),
 
-    html.Div(
-        normal_line_plot_map,
-        style={'width': '50%'}
-    ),
-
-    html.Div(
-        crisis_line_plot_map,
-        style={'width': '50%'}
-    ),
 
     html.H2(children='''
         Simulating problem in this region
@@ -190,38 +179,21 @@ def update_figure(region_name):
     return fig
 
 
-# LINE PLOTS FOR BOAT COUNTS
-
-@app.callback(
-    Output('normal-count-line-plot', 'figure'),
-    Input('region-problem', 'value')
-    )
-def normal_line_count_figure(region_name):
-    return fc.plot_normal_line_count(region_name.lower())
-
-
-@app.callback(
-    Output('crisis-count-line-plot', 'figure'),
-    Input('region-problem', 'value')
-    )
-def crisis_line_count_figure(region_name):
-    return fc.plot_normal_line_count(region_name.lower())
-
-
 # WAFFLE CHART BEGINNING ---------
+
+fs = fc.create_s3_fs()
 
 @app.callback(
     Output('waffle-simple', 'src'),
     Input('region-problem', 'value')
     )
 def update_graph(region_name):
-    AIS_enriched = fc.read_ais_prepared(region = region_name)
-    buf = io.BytesIO() # in-memory files
-    fc.waffle_chart_zone(AIS_enriched, by="ShiptypeLevel1")
-    plt.savefig(buf, format="png") # save to the above file object
-    plt.close()
-    data = base64.b64encode(buf.getbuffer()).decode("utf8") # encode to html elements
-    return "data:image/png;base64,{}".format(data)
+    region_name = region_name.split(" ")[0]
+    path = f"projet-hackathon-un-2022/output/waffle-{region_name}-2019-04-01.png"
+    image_filename = f"waffle-{region_name}-2019-04-01.png"
+    fs.download(path,image_filename)
+    encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+    return 'data:image/png;base64,{}'.format(encoded_image.decode())
 
 @app.callback(
     Output(component_id='region-number-boat', component_property='children'),
@@ -229,7 +201,6 @@ def update_graph(region_name):
     )
 def update_output_div(input_value):
     AIS_enriched = fc.read_ais_prepared(region = input_value)
-    boat_position = fc.random_sample_position(AIS_enriched)
     nb_boats = int(
         fc.count_boats(AIS_enriched, unique_id = "mmsi")
     )

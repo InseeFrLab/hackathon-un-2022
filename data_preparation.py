@@ -81,3 +81,19 @@ create_waffle(region_name = "Black", start_date = "2022-04-01")
 create_waffle(region_name = "Suez", start_date = "2019-04-01")
 create_waffle(region_name = "Suez", start_date = "2021-03-21")
 
+
+def count_boats(region_name = "Black", start_date = "2019-04-01"):
+    AIS_subset = AIS_enriched.loc[(AIS_enriched['region'] == region_name) & (AIS_enriched['start_date'] == start_date)]
+    nb_boats = int(
+            fc.count_boats(AIS_enriched, unique_id = "mmsi")
+    )
+    return nb_boats
+
+
+pd.DataFrame(
+    ["Black", "2019-04-01", count_boats(
+        region_name = "Black",
+        start_date = "2019-04-01")
+    ],
+    columns = ["region","date","count"]
+)
