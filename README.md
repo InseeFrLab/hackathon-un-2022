@@ -17,7 +17,7 @@ The data preparation (e.g. extraction from UN cluster, transformation), and anal
 
 They are mainly located at the [notebooks](./notebooks) folder.
 
-The data visualization dashboard is implemented by using plotly dash. You can find the main rendering logic at
+The data visualization dashboard is implemented by using `plotly dash`. You can find the main rendering logic at
 [app.py](./app.py) and the helper functions in the [utils](./utils) folder.
 
 This dashboard is deployed on our k8s cluster. You can visit it by using this url : [https://datadive.lab.sspcloud.fr/](https://datadive.lab.sspcloud.fr/)
