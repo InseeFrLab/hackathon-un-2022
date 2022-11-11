@@ -5,7 +5,7 @@ about the hackathon, you cloud visit this [page](https://unstats.un.org/bigdata/
 
 We mainly used below data sets:
 - AIS (provided by UN)
-- HIS (open data)
+- IHS (open data)
 - FAO (provided by UN)
 
 
